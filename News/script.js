@@ -1,31 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_KEY = '9b6b9a27ad8940099aa308eb31107465'; // Your API Key
+    const API_KEY = '9b6b9a27ad8940099aa308eb31107465';
     const newsContainer = document.getElementById('news-container');
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
 
-    // Default search query
-    let currentQuery = 'India'; // Start with a broader query relevant to your location
+    let currentQuery = 'India'; 
     let currentPage = 1;
-    const pageSize = 10; // Number of articles per page
+    const pageSize = 10;
 
     async function fetchNews(query, page = 1) {
         let NEWS_API_URL;
 
-        // Use the 'everything' endpoint for general searches
         NEWS_API_URL = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=en&sortBy=publishedAt&pageSize=${pageSize}&page=${page}&apiKey=${API_KEY}`;
-        
-        // If you specifically wanted top headlines for a country, uncomment and use this:
-        // NEWS_API_URL = `https://newsapi.org/v2/top-headlines?country=in&category=general&pageSize=${pageSize}&page=${page}&apiKey=${API_KEY}`;
-        // In this case, 'q' won't work in combination with 'country'.
 
         try {
-            newsContainer.innerHTML = '<p>Loading news...</p>'; // Display loading message
+            newsContainer.innerHTML = '<p>Loading news...</p>';
 
             const response = await fetch(NEWS_API_URL);
             if (!response.ok) {
-                // If the response is not OK (e.g., 404, 500, or API key issues)
-                const errorData = await response.json(); // Try to read the error message from the API
+                const errorData = await response.json(); 
                 throw new Error(`HTTP error! Status: ${response.status}. Code: ${errorData.code || 'N/A'}. Message: ${errorData.message || 'Unknown error.'}`);
             }
             const data = await response.json();
@@ -44,22 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayNews(articles) {
-        newsContainer.innerHTML = ''; // Clear previous content
-
-        if (!articles || articles.length === 0) {
+        newsContainer.innerHTML = ''; 
+            if (!articles || articles.length === 0) {
             newsContainer.innerHTML = '<p>No articles to display.</p>';
             return;
         }
 
         articles.forEach(article => {
-            // Check if essential article properties exist before creating the card
-            // We are being more flexible here; if description is missing, we'll provide a default.
             if (article.title && article.url && article.urlToImage) {
                 const newsArticleDiv = document.createElement('div');
                 newsArticleDiv.classList.add('news-article');
 
-                const imageUrl = article.urlToImage || 'https://via.placeholder.com/400x200?text=No+Image+Available'; // Fallback image
-                const description = article.description || 'Click to read more.'; // Fallback description
+                const imageUrl = article.urlToImage || 'https://via.placeholder.com/400x200?text=No+Image+Available'; 
+                const description = article.description || 'Click to read more.'; 
 
                 newsArticleDiv.innerHTML = `
                     <img src="${imageUrl}" alt="${article.title}">
@@ -74,20 +64,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Event listener for the search button
     searchButton.addEventListener('click', () => {
         const query = searchInput.value.trim();
         if (query) {
             currentQuery = query;
-            currentPage = 1; // Reset to first page for new search
+            currentPage = 1;
             fetchNews(currentQuery, currentPage);
         } else {
-            // If search input is empty, revert to default query or show a message
-            currentQuery = 'India'; // Or keep it empty and show a message
+           
+            currentQuery = 'India'; 
             fetchNews(currentQuery, currentPage);
         }
     });
 
-    // Initial fetch when the page loads
     fetchNews(currentQuery, currentPage);
 });
