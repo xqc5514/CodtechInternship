@@ -1,44 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_KEY = 'pub_7d802f23072a4781b0d859c136b3e1f7';
+    // REMOVE THE API_KEY HERE. IT'S NO LONGER NEEDED ON THE FRONTEND.
+    // const API_KEY = 'YOUR_API_KEY_HERE';
+
     const newsContainer = document.getElementById('news-container');
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
 
-    let currentQuery = 'India'; 
+    let currentQuery = 'India';
     let currentPage = 1;
     const pageSize = 10;
 
     async function fetchNews(query, page = 1) {
-        let NEWS_API_URL;
-
-        NEWS_API_URL = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=en&sortBy=publishedAt&pageSize=${pageSize}&page=${page}&apiKey=${API_KEY}`;
+        // Now, we call OUR serverless function, which will then call NewsAPI
+        const SERVERLESS_API_URL = `/api/get-news?query=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`;
 
         try {
             newsContainer.innerHTML = '<p>Loading news...</p>';
 
-            const response = await fetch(NEWS_API_URL);
+            const response = await fetch(SERVERLESS_API_URL);
             if (!response.ok) {
-                const errorData = await response.json(); 
-                throw new Error(`HTTP error! Status: ${response.status}. Code: ${errorData.code || 'N/A'}. Message: ${errorData.message || 'Unknown error.'}`);
+                const errorData = await response.json();
+                // Display the error message coming from our serverless function
+                throw new Error(errorData.message || errorData.error || `HTTP error! Status: ${response.status}`);
             }
             const data = await response.json();
 
             if (data.articles && data.articles.length === 0) {
-                newsContainer.innerHTML = `<p>No news found for "${query}" at the moment. Please try a different search term or check your API key/rate limits.</p>`;
+                newsContainer.innerHTML = `<p>No news found for "${query}" at the moment. Please try a different search term.</p>`;
                 return;
             }
 
             displayNews(data.articles);
 
         } catch (error) {
-            console.error('Error fetching news:', error);
-            newsContainer.innerHTML = `<p>Failed to load news: ${error.message}. Please check your API key, internet connection, or try again later.</p>`;
+            console.error('Error fetching news from serverless function:', error);
+            newsContainer.innerHTML = `<p>Failed to load news: ${error.message}. Please try again later.</p>`;
         }
     }
 
     function displayNews(articles) {
-        newsContainer.innerHTML = ''; 
-            if (!articles || articles.length === 0) {
+        newsContainer.innerHTML = '';
+
+        if (!articles || articles.length === 0) {
             newsContainer.innerHTML = '<p>No articles to display.</p>';
             return;
         }
@@ -48,8 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newsArticleDiv = document.createElement('div');
                 newsArticleDiv.classList.add('news-article');
 
-                const imageUrl = article.urlToImage || 'https://via.placeholder.com/400x200?text=No+Image+Available'; 
-                const description = article.description || 'Click to read more.'; 
+                const imageUrl = article.urlToImage || 'https://via.placeholder.com/400x200?text=No+Image+Available';
+                const description = article.description || 'Click to read more.';
 
                 newsArticleDiv.innerHTML = `
                     <img src="${imageUrl}" alt="${article.title}">
@@ -71,11 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPage = 1;
             fetchNews(currentQuery, currentPage);
         } else {
-           
-            currentQuery = 'India'; 
+            currentQuery = 'India';
             fetchNews(currentQuery, currentPage);
         }
     });
 
     fetchNews(currentQuery, currentPage);
 });
+
+script.js
